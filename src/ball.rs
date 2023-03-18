@@ -5,41 +5,42 @@ use raylib::prelude::{Rectangle, Sound, Texture2D, Vector2};
 ///
 /// Particle structure with basic data
 ///
-struct BallTailParticle {
-    position: Vector2,
+#[derive(Default, Copy, Clone)]
+pub struct BallTailParticle {
+    pub position: Vector2,
     // Color color;
-    alpha: f32,
-    size: f32,
+    pub alpha: f32,
+    pub size: f32,
     // Use it to activate/deactive particle
-    active: bool,
+    pub active: bool,
 }
 
 ///
 /// The lighting tail that follows by the moving ball
 ///
-struct BallLightingTail {
-    particles: [BallTailParticle; config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT],
+pub struct BallLightingTail {
+    pub particles: [BallTailParticle; config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT],
 }
 
 ///
 ///
 ///
 pub struct Ball {
-    center: Vector2,
-    radius: f32,
-    velocity_x: f32,
-    velocity_y: f32,
-    lightning_ball_rotation_angle: f32,
-    current_hits: usize,
-    current_velocities_increase: usize,
-    enabled_fireball: bool,
-    enabled_lightning_ball: bool,
-    alpha_mask: Texture2D,
-    lightning_ball: Texture2D,
-    enable_fireball_sound_effect: Sound,
-    enable_lightning_ball_sound_effect: Sound,
-    hit_racket_sound_effect: Sound,
-    lighting_tail: BallLightingTail,
+    pub center: Vector2,
+    pub radius: f32,
+    pub velocity_x: f32,
+    pub velocity_y: f32,
+    pub lightning_ball_rotation_angle: f32,
+    pub current_hits: usize,
+    pub current_velocities_increase: usize,
+    pub enabled_fireball: bool,
+    pub enabled_lightning_ball: bool,
+    pub alpha_mask: Texture2D,
+    pub lightning_ball: Texture2D,
+    pub enable_fireball_sound_effect: Sound,
+    pub enable_lightning_ball_sound_effect: Sound,
+    pub hit_racket_sound_effect: Sound,
+    pub lighting_tail: BallLightingTail,
 }
 
 impl Ball {

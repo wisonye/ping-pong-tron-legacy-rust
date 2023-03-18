@@ -21,21 +21,21 @@ enum RacketUpdateType {
 ///
 ///
 pub struct Racket {
-    color: Color,
-    rect: Rectangle,
-    rect_texture: Texture2D,
+    pub color: Color,
+    pub rect: Rectangle,
+    pub rect_texture: Texture2D,
 }
 
 ///
 ///
 ///
 pub struct Player {
-    r#type: PlayerType,
-    name: String,
-    score: usize,
-    level: usize,
+    pub r#type: PlayerType,
+    pub name: String,
+    pub score: usize,
+    pub level: usize,
     // The default one
-    default_racket: Racket,
+    pub default_racket: Racket,
 }
 
 impl Player {

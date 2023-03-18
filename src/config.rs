@@ -19,13 +19,14 @@ pub const TRON_RED: Color = Color::new(0xF4, 0x47, 0x47, 0xFF);
 //
 // Game misc settings
 //
-pub const GAME_FPS: f32 = 60.0;
+pub const GAME_FPS: u32 = 60;
 
 //
 // Game UI settings
 //
-pub const GAME_UI_INIT_SCREEN_WIDTH: usize = 1300;
-pub const GAME_UI_INIT_SCREEN_HEIGHT: usize = 768;
+pub const GAME_UI_TITLE: &'static str = "Ping pong tron legacy";
+pub const GAME_UI_INIT_SCREEN_WIDTH: i32 = 1300;
+pub const GAME_UI_INIT_SCREEN_HEIGHT: i32 = 768;
 pub const GAME_UI_PADDING: f32 = 10.0;
 pub const GAME_UI_BACKGROUND_COLOR: Color = TRON_DARK;
 pub const GAME_UI_BORDER_COLOR: Color = TRON_LIGHT_BLUE;
@@ -105,8 +106,8 @@ pub const BALL_UI_LIGHTING_TAIL_PRATICLE_SIZE_FOR_LIGHTNING_BALL: f32 = 0.4;
 //
 pub const RACKET_UI_MAX_RACKETS_PER_PLAYER: usize = 5;
 pub const RACKET_UI_MARGIN: f32 = 20.0;
-pub const RACKET_UI_WIDTH: f32 = 40.0;
-pub const RACKET_UI_HEIGHT: f32 = 200.0;
+pub const RACKET_UI_WIDTH: i32 = 40;
+pub const RACKET_UI_HEIGHT: i32 = 200;
 pub const RACKET_UI_COLOR: Color = TRON_LIGHT_BLUE;
 pub const RACKET_UI_VELOCITY: f32 = 600.0;
 pub const RACKET_UI_DRAW_DEBUG_BOUNDARY: bool = false;
