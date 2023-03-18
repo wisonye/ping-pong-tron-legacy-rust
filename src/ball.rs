@@ -24,7 +24,7 @@ struct BallLightingTail {
 ///
 ///
 ///
-struct Ball {
+pub struct Ball {
     center: Vector2,
     radius: f32,
     velocity_x: f32,

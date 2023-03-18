@@ -4,7 +4,7 @@ use raylib::prelude::Rectangle;
 ///
 ///
 ///
-struct Scoreboard {
+pub struct Scoreboard {
     player1: Player,
     player2: Player,
 }
