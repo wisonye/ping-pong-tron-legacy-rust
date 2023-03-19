@@ -3,7 +3,10 @@ use crate::config;
 use crate::player::{Player, PlayerType, Racket};
 use crate::scoreboard::Scoreboard;
 use raylib::prelude::{
-    window, Color, Image, RaylibAudio, RaylibHandle, RaylibThread, Rectangle, Sound, Vector2,
+    consts::{KeyboardKey, TraceLogLevel},
+    logging::{set_trace_log, trace_log},
+    window, Color, Image, RaylibAudio, RaylibDraw, RaylibDrawHandle, RaylibHandle, RaylibThread,
+    Rectangle, Sound, Vector2,
 };
 use std::env;
 use std::str::FromStr;
@@ -68,6 +71,9 @@ impl Game {
         // Set our game FPS (frames-per-second)
         rl_handle.set_target_fps(config::GAME_FPS);
 
+        // Set log level
+        set_trace_log(TraceLogLevel::LOG_DEBUG);
+
         //
         // Load sound effects
         //
@@ -121,8 +127,6 @@ impl Game {
             rl_handle.load_texture_from_image(&rl_thread, &racket_image)?;
         let player2_default_racket_rect_texture =
             rl_handle.load_texture_from_image(&rl_thread, &racket_image)?;
-
-        // rl_hanlde.trace_log(LOG_DEBUG, ">>> [ Game_init ] - Game initialization [ done ]");
 
         let player1 = Player {
             r#type: PlayerType::Left,
@@ -200,6 +204,13 @@ impl Game {
             you_win_sound_effect,
         };
 
+        game.print_debug_info();
+
+        trace_log(
+            TraceLogLevel::LOG_DEBUG,
+            ">>> [ Game_init ] - Game initialization [ done ]",
+        );
+
         Ok(game)
     }
 
@@ -245,7 +256,25 @@ impl Game {
     ///
     ///
     ///
-    pub fn run(&self) {}
+    pub fn run(&mut self) {
+        trace_log(
+            TraceLogLevel::LOG_DEBUG,
+            ">>> [ Game_run ] - Game is running......",
+        );
+
+        while !self.rl_handle.window_should_close() {
+            // if self.rl_handle.is_key_pressed(KeyboardKey::KEY_P) {
+            //     if you_win_sound_effect.is_ok() {
+            //         rl_audio.play_sound_multi(you_win_sound_effect.as_ref().unwrap());
+            //     }
+            // }
+
+            let mut d = self.rl_handle.begin_drawing(&self.rl_thread);
+
+            d.clear_background(Color::WHITE);
+            d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
+        }
+    }
 
     ///
     ///
@@ -260,5 +289,10 @@ impl Game {
     ///
     ///
     ///
-    pub fn print_debug_info(&self) {}
+    pub fn print_debug_info(&self) {
+        trace_log(
+            TraceLogLevel::LOG_DEBUG,
+            ">>> [ Game_init ] - Game initialization [ done ]",
+        );
+    }
 }
