@@ -4,6 +4,7 @@ mod game;
 mod player;
 mod scoreboard;
 mod table;
+mod utils;
 
 use game::Game;
 

@@ -14,6 +14,7 @@ use std::str::FromStr;
 ///
 ///
 ///
+#[derive(Debug)]
 enum GameState {
     UnInit = 0x01,
     Init = 0x02,
@@ -26,6 +27,7 @@ enum GameState {
 ///
 ///
 ///
+#[derive(Debug)]
 struct MiscSettings {
     game_fps: f32,
 }
@@ -46,6 +48,18 @@ pub struct Game {
     is_fullscreen: bool,
     is_player1_wins_last_round: bool,
     you_win_sound_effect: Sound,
+}
+
+impl std::fmt::Debug for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        // write!(f, "{}", self.xxx)
+        f.debug_struct("[ Game ]")
+            .field("state", &self.state)
+            .field("player1", &self.player1)
+            .field("player2", &self.player2)
+            .field("ball", &self.ball)
+            .finish()
+    }
 }
 
 impl Game {
@@ -290,9 +304,11 @@ impl Game {
     ///
     ///
     pub fn print_debug_info(&self) {
-        trace_log(
-            TraceLogLevel::LOG_DEBUG,
-            ">>> [ Game_init ] - Game initialization [ done ]",
-        );
+        println!("\n>>> [ print_debug_info ] - Game: {:#?}", self);
+
+        //
+        // `trace_log` has a bug, it CANNOT print too long string!!!!
+        //
+        // trace_log(TraceLogLevel::LOG_DEBUG, debug_info.as_str());
     }
 }
