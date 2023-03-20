@@ -2,7 +2,6 @@ use crate::ball::{Ball, BallLightingTail, BallTailParticle};
 use crate::config;
 use crate::player::{Player, PlayerType, Racket};
 use crate::scoreboard::Scoreboard;
-use crate::table::Table;
 use raylib::prelude::{
     consts::{KeyboardKey, TraceLogLevel},
     logging::{set_trace_log, trace_log},
@@ -15,12 +14,12 @@ use std::str::FromStr;
 ///
 ///
 ///
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum GameState {
     UnInit,
     Init,
     BeforeStart,
-    Player,
+    Playing,
     PlayerWins(PlayerType, String, usize),
     Pause,
 }
@@ -426,6 +425,132 @@ impl Game {
     ///
     ///
     ///
+    fn logic(&mut self) {
+        //
+        // Press 'ctrl+f' to toggle fullscreen
+        //
+        if self.rl_handle.is_key_down(KeyboardKey::KEY_LEFT_CONTROL)
+            && self.rl_handle.is_key_pressed(KeyboardKey::KEY_F)
+        {
+            // Save the `table_rect` before toggling fullscreen
+            self.table_rect_before_screen_changed = self.table_rect;
+
+            //
+            self.toggle_fullscreen();
+
+            let screen_width = self.rl_handle.get_screen_width();
+            let screen_height = self.rl_handle.get_screen_width();
+
+            trace_log(
+                TraceLogLevel::LOG_DEBUG,
+                &format!(
+                    ">>> [ Game_logic ] - Toggle fullscreen, screen_width: {}, screen_height: {}",
+                    screen_width, screen_height
+                ),
+            );
+
+            //
+            // Update `game.table_rect`
+            //
+            let new_sb_rect = self
+                .scoreboard
+                .recalculate_rect(screen_width, screen_height);
+            let sb_rect_bottom = new_sb_rect.y + new_sb_rect.height;
+            self.table_rect = Rectangle {
+                x: config::TABLE_UI_MARGIN,
+                y: sb_rect_bottom + config::TABLE_UI_MARGIN,
+                width: screen_width as f32 - 2.0 * config::TABLE_UI_MARGIN,
+                height: screen_height as f32 - sb_rect_bottom - 2.0 * config::TABLE_UI_MARGIN,
+            };
+
+            // //
+            // // Sync racket position
+            // //
+            // Player_update_racket_after_screen_size_changed(
+            //     &self.player1, &self.table_rect,
+            //     &self.table_rect_before_screen_changed);
+            // Player_update_racket_after_screen_size_changed(
+            //     &self.player2, &self.table_rect,
+            //     &self.table_rect_before_screen_changed);
+        }
+
+        //
+        // Press 'space' to start game
+        //
+        if self.rl_handle.is_key_pressed(KeyboardKey::KEY_SPACE) {
+            if let GameState::PlayerWins(_, _, _) = self.state {
+                self.state = GameState::Playing;
+            //Ball_restart(&game.ball, &game.table_rect);
+            //Player_update_racket(&game.player1, &game.table_rect, RUT_RESET);
+            //Player_update_racket(&game.player2, &game.table_rect, RUT_RESET);
+            //Game_print_debug_info(game);
+            } else if self.state == GameState::BeforeStart {
+                self.state = GameState::Playing;
+                //Ball_restart(&game.ball, &game.table_rect);
+                //Player_update_racket(&game.player1, &game.table_rect, RUT_RESET);
+                //Player_update_racket(&game.player2, &game.table_rect, RUT_RESET);
+                //Game_print_debug_info(game);
+            }
+        }
+
+        // //
+        // // Game is playing, update all states
+        // //
+        // if self.state == GameState::Playing {
+        //     // Update ball
+        //     Ball *ball = &game->ball;
+        //     bool is_player1_win = false;
+        //     bool is_player2_win = false;
+        //     Ball_update(ball, &game->table_rect, &game->player1, &game->player2,
+        //                 &is_player1_win, &is_player2_win);
+        //     if (is_player1_win) {
+        //         game->player1.score += 1;
+        //         game->state = GS_PLAYER_WINS;
+        //         game->is_player1_wins_last_round = true;
+        //         PlaySound(game->you_win_sound_effect);
+        //         return;
+        //     } else if (is_player2_win) {
+        //         game->player2.score += 1;
+        //         game->state = GS_PLAYER_WINS;
+        //         game->is_player1_wins_last_round = false;
+        //         PlaySound(game->you_win_sound_effect);
+        //         return;
+        //     }
+
+        //     // Update lighting tail
+        //     Ball_update_lighting_tail(ball);
+
+        //     /* TraceLog(LOG_DEBUG, */
+        //     /*          ">>> [ Game_logic ] - ball center: { x: %.2f, y: %.2f, " */
+        //     /*          "speed_x: %.2f, speed_Y: %.2f}", */
+        //     /*          ball->center.x, ball->center.y, ball->speed_x,
+        //      * ball->speed_y); */
+
+        //     //
+        //     // Update racket postion
+        //     //
+        //     if (IsKeyDown(PLAYER_2_UP_KEY)) {
+        //         Player_update_racket(&game->player2, &game->table_rect,
+        //                              RUT_MOVE_UP);
+        //     }
+        //     if (IsKeyDown(PLAYER_2_DOWN_KEY)) {
+        //         Player_update_racket(&game->player2, &game->table_rect,
+        //                              RUT_MOVE_DOWN);
+        //     }
+        //     if (IsKeyDown(PLAYER_1_UP_KEY)) {
+        //         Player_update_racket(&game->player1, &game->table_rect,
+        //                              RUT_MOVE_UP);
+        //     }
+        //     if (IsKeyDown(PLAYER_1_DOWN_KEY)) {
+        //         Player_update_racket(&game->player1, &game->table_rect,
+        //                              RUT_MOVE_DOWN);
+        //     }
+        // }
+    }
+
+    ///
+    ///
+    ///
     pub fn run(&mut self) {
         trace_log(
             TraceLogLevel::LOG_DEBUG,
@@ -446,7 +571,7 @@ impl Game {
             //
             // Update game logic
             //
-            // self.logic();
+            self.logic();
 
             let mut d = self.rl_handle.begin_drawing(&self.rl_thread);
 

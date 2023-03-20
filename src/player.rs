@@ -5,7 +5,7 @@ use raylib::prelude::{Color, Rectangle, Texture2D};
 ///
 ///
 ///
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum PlayerType {
     Left,
     Right,
@@ -74,7 +74,7 @@ impl Player {
     ///
     ///
     ///
-    fn racket_redraw(&self, container: &Rectangle) {}
+    pub fn racket_redraw(&self, container: &Rectangle) {}
 
     ///
     ///

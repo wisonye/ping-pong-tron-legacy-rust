@@ -207,7 +207,16 @@ impl Scoreboard {
     ///
     ///
     ///
-    fn recalculate_rect(&self) -> Rectangle {
-        Rectangle::default()
+    pub fn recalculate_rect(&self, screen_width: i32, screen_height: i32) -> Rectangle {
+        //
+        // Outside border
+        //
+        Rectangle {
+            x: config::SCOREBOARD_UI_PADDING,
+            y: config::SCOREBOARD_UI_PADDING,
+            width: screen_width as f32 - (2.0 * config::SCOREBOARD_UI_PADDING),
+            height: screen_height as f32
+                * (config::SCOREBOARD_UI_BORDER_HEIGHT_PERCENT / 100 as f32),
+        }
     }
 }
