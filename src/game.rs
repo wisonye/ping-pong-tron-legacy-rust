@@ -603,11 +603,11 @@ impl Game {
                 &sb_rect,
             );
 
-            // //
-            // // Player rackets
-            // //
-            // self.player1.racket_redraw(&self.table_rect);
-            // self.player2.racket_redraw(&self.table_rect);
+            //
+            // Player rackets
+            //
+            self.player1.racket_redraw(&mut d);
+            self.player2.racket_redraw(&mut d);
 
             //
             // Ball

@@ -1,6 +1,6 @@
-use crate::utils::color_to_hex_str;
 use crate::config;
-use raylib::prelude::{Color, Rectangle, Texture2D};
+use crate::utils::color_to_hex_str;
+use raylib::prelude::{Color, RaylibDraw, RaylibDrawHandle, Rectangle, Texture2D, Vector2};
 
 ///
 ///
@@ -69,12 +69,45 @@ impl Player {
     ///
     ///
     ///
-    fn win(&self) {}
+    fn win(&mut self) {
+        self.score += 1;
+    }
 
     ///
     ///
     ///
-    pub fn racket_redraw(&self, container: &Rectangle) {}
+    pub fn racket_redraw(&self, rdl: &mut RaylibDrawHandle) {
+        let racket_rect = self.default_racket.rect;
+
+        // DrawRectangleRec(player->default_racket.rect,
+        // player->default_racket.color);
+
+        // BeginBlendMode(BLEND_ADDITIVE);
+        rdl.draw_texture_pro(
+            &self.default_racket.rect_texture,
+            // Texture rect to draw from
+            Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: config::RACKET_UI_WIDTH as f32,
+                height: config::RACKET_UI_HEIGHT as f32,
+            },
+            // Target rect to draw (orgin is TopLeft by default!!!)
+            racket_rect,
+            // Origin offset of the target rect to draw (TopLeft by default)
+            Vector2 { x: 0.0, y: 0.0 },
+            0.0,
+            config::RACKET_UI_COLOR,
+        );
+        // EndBlendMode();
+
+        if config::RACKET_UI_DRAW_DEBUG_BOUNDARY {
+            rdl.draw_rectangle_rec(
+                self.default_racket.rect,
+                Color::fade(&self.default_racket.color, 0.5),
+            );
+        }
+    }
 
     ///
     ///
