@@ -6,8 +6,8 @@ use crate::table::Table;
 use raylib::prelude::{
     consts::{KeyboardKey, TraceLogLevel},
     logging::{set_trace_log, trace_log},
-    window, Color, Image, RaylibAudio, RaylibDraw, RaylibDrawHandle, RaylibHandle, RaylibThread,
-    Rectangle, Sound, Vector2,
+    measure_text_ex, window, Color, Image, RaylibAudio, RaylibDraw, RaylibDrawHandle, RaylibHandle,
+    RaylibThread, Rectangle, Sound, Vector2, WeakFont,
 };
 use std::env;
 use std::str::FromStr;
@@ -16,7 +16,7 @@ use std::str::FromStr;
 ///
 ///
 #[derive(Debug)]
-enum GameState {
+pub enum GameState {
     UnInit,
     Init,
     BeforeStart,
@@ -45,7 +45,7 @@ pub struct Game {
     table_rect_before_screen_changed: Rectangle,
     table_rect: Rectangle,
     ball: Ball,
-    state: GameState,
+    pub state: GameState,
     is_fullscreen: bool,
     is_player1_wins_last_round: bool,
     you_win_sound_effect: Sound,
@@ -264,10 +264,164 @@ impl Game {
             self.is_fullscreen = false;
         }
     }
+
     ///
     ///
     ///
-    pub fn redraw(&mut self, rdl: &mut RaylibDrawHandle) {}
+    pub fn redraw_table(
+        rdl: &mut RaylibDrawHandle,
+        screen_width: i32,
+        screen_height: i32,
+        default_font: &WeakFont,
+        game_state: &GameState,
+        sb_rect: &Rectangle,
+    ) -> Rectangle {
+        //
+        // Outside border
+        //
+        let sb_rect_bottom = sb_rect.y + sb_rect.height;
+        let rect = Rectangle {
+            x: config::TABLE_UI_MARGIN,
+            y: sb_rect_bottom + config::TABLE_UI_MARGIN,
+            width: screen_width as f32 - 2.0 * config::TABLE_UI_MARGIN,
+            height: screen_height as f32 - sb_rect_bottom - 2.0 * config::TABLE_UI_MARGIN,
+        };
+
+        rdl.draw_rectangle_lines_ex(
+            rect,
+            config::TABLE_UI_BORDER_THICKNESS,
+            config::TABLE_UI_BORDER_COLOR,
+        );
+
+        match game_state {
+            //
+            // GS_BEFORE_START
+            //
+            GameState::BeforeStart => {
+                // outside border
+                let start_prompt_font_size = measure_text_ex(
+                    &default_font,
+                    config::TABLE_UI_FIRST_START_PROMPT_TEXT,
+                    config::TABLE_UI_FIRST_START_PROMPT_FONT_SIZE,
+                    config::TABLE_UI_FIRST_START_PROMPT_FONT_SPACE,
+                );
+
+                let start_prompt_rect_width = start_prompt_font_size.x
+                    + 2.0 * config::TABLE_UI_FIRST_START_PROMPT_CONTAINER_HORIZONTAL_PADDING;
+                let start_prompt_rect_height = start_prompt_font_size.y
+                    + 2.0 * config::TABLE_UI_FIRST_START_PROMPT_CONTAINER_VERTICAL_PADDING;
+                let start_prompt_rect = Rectangle {
+                    x: rect.x + ((rect.width - start_prompt_rect_width) / 2.0),
+                    y: rect.y + ((rect.height - start_prompt_rect_height) / 2.0),
+                    width: start_prompt_rect_width,
+                    height: start_prompt_rect_height,
+                };
+                rdl.draw_rectangle_lines_ex(
+                    start_prompt_rect,
+                    config::TABLE_UI_BORDER_THICKNESS,
+                    config::TABLE_UI_FIRST_START_PROMPT_BORDER_COLOR,
+                );
+
+                // Text
+                let start_prompt_font_draw_x = start_prompt_rect.x
+                    + config::TABLE_UI_FIRST_START_PROMPT_CONTAINER_HORIZONTAL_PADDING;
+                let start_prompt_font_draw_y = start_prompt_rect.y
+                    + config::TABLE_UI_FIRST_START_PROMPT_CONTAINER_VERTICAL_PADDING;
+                let start_prompt_font_point = Vector2 {
+                    x: start_prompt_font_draw_x,
+                    y: start_prompt_font_draw_y,
+                };
+                rdl.draw_text_ex(
+                    &default_font,
+                    config::TABLE_UI_FIRST_START_PROMPT_TEXT,
+                    start_prompt_font_point,
+                    config::TABLE_UI_FIRST_START_PROMPT_FONT_SIZE,
+                    config::TABLE_UI_FIRST_START_PROMPT_FONT_SPACE,
+                    config::TABLE_UI_FIRST_START_PROMPT_TEXT_COLOR,
+                );
+            }
+            //
+            // GS_PLAYER_WINS
+            //
+            GameState::PlayerWins(player_type, name, score) => {
+                // Last winner's name
+                let last_winner_name =
+                    format!("{}{}", name, config::TABLE_UI_PLAYER_WINS_PROMPT_TEXT);
+
+                // outside border
+                let win_prompt_font_size = measure_text_ex(
+                    &default_font,
+                    &last_winner_name,
+                    config::TABLE_UI_PLAYER_WINS_PROMPT_FONT_SIZE,
+                    config::TABLE_UI_PLAYER_WINS_PROMPT_FONT_SPACE,
+                );
+
+                let restart_font_size = measure_text_ex(
+                    &default_font,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_TEXT,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_FONT_SIZE,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_FONT_SPACE,
+                );
+
+                let wins_prompt_rect_width = win_prompt_font_size.x
+                    + 2.0 * config::TABLE_UI_PLAYER_WINS_PROMPT_CONTAINER_HORIZONTAL_PADDING;
+                let wins_prompt_rect_height = win_prompt_font_size.y
+                    + restart_font_size.y
+                    + 2.0 * config::TABLE_UI_PLAYER_WINS_PROMPT_CONTAINER_VERTICAL_PADDING
+                    + 2.0 * config::TABLE_UI_PLAYER_WINS_RESTART_CONTAINER_VERTICAL_PADDING;
+                let wins_prompt_rect = Rectangle {
+                    x: rect.x + ((rect.width - wins_prompt_rect_width) / 2.0),
+                    y: rect.y + ((rect.height - wins_prompt_rect_height) / 2.0),
+                    width: wins_prompt_rect_width,
+                    height: wins_prompt_rect_height,
+                };
+                rdl.draw_rectangle_lines_ex(
+                    wins_prompt_rect,
+                    config::TABLE_UI_BORDER_THICKNESS,
+                    config::TABLE_UI_PLAYER_WINS_PROMPT_BORDER_COLOR,
+                );
+
+                // Text
+                let wins_prompt_font_draw_x = wins_prompt_rect.x
+                    + config::TABLE_UI_PLAYER_WINS_PROMPT_CONTAINER_HORIZONTAL_PADDING;
+                let wins_prompt_font_draw_y = wins_prompt_rect.y
+                    + config::TABLE_UI_PLAYER_WINS_PROMPT_CONTAINER_VERTICAL_PADDING;
+                let wins_prompt_font_point = Vector2 {
+                    x: wins_prompt_font_draw_x,
+                    y: wins_prompt_font_draw_y,
+                };
+                rdl.draw_text_ex(
+                    &default_font,
+                    &last_winner_name,
+                    wins_prompt_font_point,
+                    config::TABLE_UI_PLAYER_WINS_PROMPT_FONT_SIZE,
+                    config::TABLE_UI_PLAYER_WINS_PROMPT_FONT_SPACE,
+                    config::TABLE_UI_PLAYER_WINS_PROMPT_TEXT_COLOR,
+                );
+
+                let restart_font_draw_x =
+                    wins_prompt_rect.x + ((wins_prompt_rect.width - restart_font_size.x) / 2.0);
+                let restart_font_draw_y = wins_prompt_font_draw_y
+                    + win_prompt_font_size.y
+                    + config::TABLE_UI_PLAYER_WINS_PROMPT_CONTAINER_VERTICAL_PADDING;
+                let restart_font_point = Vector2 {
+                    x: restart_font_draw_x,
+                    y: restart_font_draw_y,
+                };
+                rdl.draw_text_ex(
+                    &default_font,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_TEXT,
+                    restart_font_point,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_FONT_SIZE,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_FONT_SPACE,
+                    config::TABLE_UI_PLAYER_WINS_RESTART_TEXT_COLOR,
+                );
+            }
+            _ => {}
+        }
+
+        return rect;
+    }
 
     ///
     ///
@@ -315,7 +469,14 @@ impl Game {
             //
             // Table
             //
-            // let table_rect = Table::redraw(&self, &sb_rect);
+            let table_rect = Self::redraw_table(
+                &mut d,
+                screen_width,
+                screen_height,
+                &default_font,
+                &self.state,
+                &sb_rect,
+            );
 
             // //
             // // Player rackets

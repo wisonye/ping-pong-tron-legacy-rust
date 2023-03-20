@@ -119,6 +119,7 @@ impl Scoreboard {
             color,
         );
     }
+
     ///
     ///
     ///

@@ -1,23 +1,16 @@
 use crate::game::Game;
-use raylib::prelude::Rectangle;
+use raylib::prelude::{ Rectangle, RaylibDrawHandle, WeakFont, Vector2 };
 
 ///
 ///
 ///
-struct Table {}
+pub struct Table {}
 
 impl Table {
     ///
     ///
     ///
-    fn Table_recalculate_rect(game: &Game, sb_rect: &Rectangle) -> Rectangle {
-        Rectangle::default()
-    }
-
-    ///
-    ///
-    ///
-    fn Table_redraw(game: &Game, sb_rect: &Rectangle) -> Rectangle {
+    pub fn recalculate_rect(game: &Game, sb_rect: &Rectangle) -> Rectangle {
         Rectangle::default()
     }
 }
