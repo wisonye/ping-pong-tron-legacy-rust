@@ -2,6 +2,7 @@ use crate::ball::{Ball, BallLightingTail, BallTailParticle};
 use crate::config;
 use crate::player::{Player, PlayerType, Racket};
 use crate::scoreboard::Scoreboard;
+use crate::table::Table;
 use raylib::prelude::{
     consts::{KeyboardKey, TraceLogLevel},
     logging::{set_trace_log, trace_log},
@@ -16,12 +17,12 @@ use std::str::FromStr;
 ///
 #[derive(Debug)]
 enum GameState {
-    UnInit = 0x01,
-    Init = 0x02,
-    BeforeStart = 0x03,
-    Player = 0x04,
-    PlayerWins = 0x05,
-    Pause = 0x06,
+    UnInit,
+    Init,
+    BeforeStart,
+    Player,
+    PlayerWins(PlayerType, String, usize),
+    Pause,
 }
 
 ///
@@ -36,8 +37,8 @@ struct MiscSettings {
 ///
 ///
 pub struct Game {
-    rl_handle: RaylibHandle,
-    rl_thread: RaylibThread,
+    pub rl_handle: RaylibHandle,
+    pub rl_thread: RaylibThread,
     player1: Player,
     player2: Player,
     scoreboard: Scoreboard,
@@ -77,6 +78,7 @@ impl Game {
             .undecorated()
             .build();
 
+        // You can't use `let _` here, otherwise, "failed to load sound XXX"
         let mut rl_audio = RaylibAudio::init_audio_device();
 
         // Hide the cursor
@@ -218,12 +220,12 @@ impl Game {
             you_win_sound_effect,
         };
 
-        game.print_debug_info();
+        // game.print_debug_info();
 
-        trace_log(
-            TraceLogLevel::LOG_DEBUG,
-            ">>> [ Game_init ] - Game initialization [ done ]",
-        );
+        // trace_log(
+        //     TraceLogLevel::LOG_DEBUG,
+        //     ">>> [ Game_init ] - Game initialization [ done ]",
+        // );
 
         Ok(game)
     }
@@ -265,7 +267,7 @@ impl Game {
     ///
     ///
     ///
-    pub fn redraw(&self) {}
+    pub fn redraw(&mut self, rdl: &mut RaylibDrawHandle) {}
 
     ///
     ///
@@ -276,6 +278,10 @@ impl Game {
             ">>> [ Game_run ] - Game is running......",
         );
 
+        let screen_width = self.rl_handle.get_screen_width();
+        let screen_height = self.rl_handle.get_screen_height();
+        let default_font = self.rl_handle.get_font_default();
+
         while !self.rl_handle.window_should_close() {
             // if self.rl_handle.is_key_pressed(KeyboardKey::KEY_P) {
             //     if you_win_sound_effect.is_ok() {
@@ -283,11 +289,70 @@ impl Game {
             //     }
             // }
 
+            //
+            // Update game logic
+            //
+            // self.logic();
+
             let mut d = self.rl_handle.begin_drawing(&self.rl_thread);
 
-            d.clear_background(Color::WHITE);
-            d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
+            //
+            // Clean last frame
+            //
+            d.clear_background(config::GAME_UI_BACKGROUND_COLOR);
+
+            //
+            // Redraw the entire game
+            //
+
+            //
+            // Scoreboard
+            //
+            let sb_rect =
+                self.scoreboard
+                    .redraw(&mut d, screen_width, screen_height, &default_font);
+
+            //
+            // Table
+            //
+            // let table_rect = Table::redraw(&self, &sb_rect);
+
+            // //
+            // // Player rackets
+            // //
+            // self.player1.racket_redraw(&self.table_rect);
+            // self.player2.racket_redraw(&self.table_rect);
+
+            //
+            // Ball
+            //
+            // self.ball.redraw();
+            // //
+            // // Update `game->table_rect` if changed
+            // //
+            // // trace_log(TraceLogLevel::LOG_DEBUG,
+            // //          ">>> [ Game_redraw ] - table_rect: {x: %.2f, y: %.2f, width: "
+            // //          "%.2f, height: %.2f}",
+            // //          table_rect.x, table_rect.y, table_rect.width,
+            // //          table_rect.height);
+            // if table_rect.x != self.table_rect.x
+            //     || table_rect.y != self.table_rect.y
+            //     || table_rect.width != self.table_rect.width
+            //     || table_rect.height != self.table_rect.height
+            // {
+            //     self.table_rect = table_rect;
+
+            //     trace_log(
+            //         TraceLogLevel::LOG_DEBUG,
+            //         ">>> [ Game_redraw ] - Update 'game->table_rect'",
+            //     );
+            // }
         }
+
+        trace_log(
+            TraceLogLevel::LOG_DEBUG,
+            ">>> [ Game_run ] - Exit the game loop",
+        );
     }
 
     ///
