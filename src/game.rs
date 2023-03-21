@@ -555,7 +555,7 @@ impl Game {
             //
             // Update lighting tail
             //
-            // Ball_update_lighting_tail(ball);
+            self.ball.update_lighting_tail();
 
             //
             // Update racket postion

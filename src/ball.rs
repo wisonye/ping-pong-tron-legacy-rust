@@ -376,5 +376,39 @@ impl Ball {
     ///
     ///
     ///
-    fn update_lighting_tail(&mut self) {}
+    pub fn update_lighting_tail(&mut self) {
+        //
+        // Activate one particle every frame and Update active particles
+        // NOTE: Particles initial position should be mouse position when
+        // activated NOTE: Particles fall down with gravity and rotation... and
+        // disappear after 2 seconds (alpha = 0) NOTE: When a particle
+        // disappears, active = false and it can be reused.
+        //
+        let mut particles = &mut self.lighting_tail.particles;
+
+        let mut index = 0;
+        while index < config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {
+            // for mut i in 0..config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {
+            if !particles[index].active {
+                particles[index].active = true;
+                particles[index].alpha = config::BALL_UI_LIGHTING_TAIL_PRATICLE_INIT_ALPHA;
+                particles[index].position = self.center;
+                index = config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT;
+            } else {
+                index += 1;
+            }
+            // }
+        }
+
+        for i in 0..config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {
+            if particles[i].active {
+                // particles[i].position.y += gravity / 2;
+                particles[i].alpha -= 0.05;
+
+                if particles[i].alpha <= 0.0 {
+                    particles[i].active = false;
+                }
+            }
+        }
+    }
 }
