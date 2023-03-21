@@ -1,6 +1,6 @@
 use crate::ball::{Ball, BallLightingTail, BallTailParticle};
 use crate::config;
-use crate::player::{Player, PlayerType, Racket};
+use crate::player::{Player, PlayerType, Racket, RacketUpdateType};
 use crate::scoreboard::Scoreboard;
 use raylib::prelude::{
     consts::{KeyboardKey, TraceLogLevel},
@@ -160,7 +160,7 @@ impl Game {
         };
 
         let player2 = Player {
-            r#type: PlayerType::Left,
+            r#type: PlayerType::Right,
             name: match env::var("PLAYER_2_NAME") {
                 Ok(value) => value,
                 Err(_) => config::PLAYER_2_NAME.to_string(),
@@ -478,18 +478,35 @@ impl Game {
         // Press 'space' to start game
         //
         if self.rl_handle.is_key_pressed(KeyboardKey::KEY_SPACE) {
+            let current_frame_time = self.rl_handle.get_frame_time();
             if let GameState::PlayerWins(_, _, _) = self.state {
                 self.state = GameState::Playing;
-            //Ball_restart(&game.ball, &game.table_rect);
-            //Player_update_racket(&game.player1, &game.table_rect, RUT_RESET);
-            //Player_update_racket(&game.player2, &game.table_rect, RUT_RESET);
-            //Game_print_debug_info(game);
+                //Ball_restart(&game.ball, &game.table_rect);
+                self.player1.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::Reset,
+                    current_frame_time,
+                );
+                self.player2.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::Reset,
+                    current_frame_time,
+                );
+                self.print_debug_info();
             } else if self.state == GameState::BeforeStart {
                 self.state = GameState::Playing;
                 //Ball_restart(&game.ball, &game.table_rect);
-                //Player_update_racket(&game.player1, &game.table_rect, RUT_RESET);
-                //Player_update_racket(&game.player2, &game.table_rect, RUT_RESET);
-                //Game_print_debug_info(game);
+                self.player1.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::Reset,
+                    current_frame_time,
+                );
+                self.player2.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::Reset,
+                    current_frame_time,
+                );
+                self.print_debug_info();
             }
         }
 
@@ -613,26 +630,26 @@ impl Game {
             // Ball
             //
             // self.ball.redraw();
-            // //
-            // // Update `game->table_rect` if changed
-            // //
-            // // trace_log(TraceLogLevel::LOG_DEBUG,
-            // //          ">>> [ Game_redraw ] - table_rect: {x: %.2f, y: %.2f, width: "
-            // //          "%.2f, height: %.2f}",
-            // //          table_rect.x, table_rect.y, table_rect.width,
-            // //          table_rect.height);
-            // if table_rect.x != self.table_rect.x
-            //     || table_rect.y != self.table_rect.y
-            //     || table_rect.width != self.table_rect.width
-            //     || table_rect.height != self.table_rect.height
-            // {
-            //     self.table_rect = table_rect;
+            //
+            // Update `game->table_rect` if changed
+            //
+            // trace_log(TraceLogLevel::LOG_DEBUG,
+            //          ">>> [ Game_redraw ] - table_rect: {x: %.2f, y: %.2f, width: "
+            //          "%.2f, height: %.2f}",
+            //          table_rect.x, table_rect.y, table_rect.width,
+            //          table_rect.height);
+            if table_rect.x != self.table_rect.x
+                || table_rect.y != self.table_rect.y
+                || table_rect.width != self.table_rect.width
+                || table_rect.height != self.table_rect.height
+            {
+                self.table_rect = table_rect;
 
-            //     trace_log(
-            //         TraceLogLevel::LOG_DEBUG,
-            //         ">>> [ Game_redraw ] - Update 'game->table_rect'",
-            //     );
-            // }
+                trace_log(
+                    TraceLogLevel::LOG_DEBUG,
+                    ">>> [ Game_redraw ] - Update 'game->table_rect'",
+                );
+            }
         }
 
         trace_log(

@@ -1,6 +1,10 @@
 use crate::config;
 use crate::utils::color_to_hex_str;
-use raylib::prelude::{Color, RaylibDraw, RaylibDrawHandle, Rectangle, Texture2D, Vector2};
+use raylib::prelude::{
+    consts::{KeyboardKey, TraceLogLevel},
+    logging::{set_trace_log, trace_log},
+    Color, RaylibDraw, RaylibDrawHandle, Rectangle, Texture2D, Vector2,
+};
 
 ///
 ///
@@ -15,7 +19,7 @@ pub enum PlayerType {
 ///
 ///
 #[derive(Debug)]
-enum RacketUpdateType {
+pub enum RacketUpdateType {
     MoveUp,
     MoveDown,
     Reset,
@@ -122,11 +126,52 @@ impl Player {
     ///
     ///
     ///
-    fn Player_update_racket(
-        &self,
+    pub fn update_racket(
+        &mut self,
         container: &Rectangle,
-        is_fullscreen: bool,
         rut: RacketUpdateType,
+        current_frame_time: f32,
     ) {
+        match rut {
+            //
+            // Center `y`
+            //
+            RacketUpdateType::Reset => {
+                println!("\n>>> player type: {:?}", self.r#type);
+                self.default_racket.rect = Rectangle {
+                    x: if self.r#type == PlayerType::Left {
+                        container.x + config::RACKET_UI_MARGIN
+                    } else {
+                        container.x + container.width
+                            - config::RACKET_UI_MARGIN as f32
+                            - config::RACKET_UI_WIDTH as f32
+                    },
+                    y: container.y + ((container.height - config::RACKET_UI_HEIGHT as f32) / 2.0),
+                    width: config::RACKET_UI_WIDTH as f32,
+                    height: config::RACKET_UI_HEIGHT as f32,
+                };
+                trace_log(
+                    TraceLogLevel::LOG_DEBUG,
+                    "[ Player_update_racket ] - RUT_RESET",
+                );
+            }
+            //
+            // Apply velocity to `y`
+            //
+            RacketUpdateType::MoveUp => {
+                let new_y =
+                    self.default_racket.rect.y - config::RACKET_UI_VELOCITY * current_frame_time;
+                if new_y >= container.y {
+                    self.default_racket.rect.y = new_y;
+                }
+            }
+            RacketUpdateType::MoveDown => {
+                let new_y =
+                    self.default_racket.rect.y + config::RACKET_UI_VELOCITY * current_frame_time;
+                if new_y + config::RACKET_UI_HEIGHT as f32 <= container.y + container.height {
+                    self.default_racket.rect.y = new_y;
+                }
+            }
+        }
     }
 }
