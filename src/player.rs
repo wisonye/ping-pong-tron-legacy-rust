@@ -9,7 +9,7 @@ use raylib::prelude::{
 ///
 ///
 ///
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum PlayerType {
     Left,
     Right,

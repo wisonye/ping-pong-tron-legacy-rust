@@ -46,7 +46,6 @@ pub struct Game {
     ball: Ball,
     pub state: GameState,
     is_fullscreen: bool,
-    is_player1_wins_last_round: bool,
     you_win_sound_effect: Sound,
 }
 
@@ -215,7 +214,6 @@ impl Game {
             ball,
             state: GameState::BeforeStart, // Set to `GS_BEFORE_START`
             is_fullscreen: false,
-            is_player1_wins_last_round: false,
             you_win_sound_effect,
         };
 
@@ -512,59 +510,77 @@ impl Game {
             }
         }
 
-        // //
-        // // Game is playing, update all states
-        // //
-        // if self.state == GameState::Playing {
-        //     // Update ball
-        //     Ball *ball = &game->ball;
-        //     bool is_player1_win = false;
-        //     bool is_player2_win = false;
-        //     Ball_update(ball, &game->table_rect, &game->player1, &game->player2,
-        //                 &is_player1_win, &is_player2_win);
-        //     if (is_player1_win) {
-        //         game->player1.score += 1;
-        //         game->state = GS_PLAYER_WINS;
-        //         game->is_player1_wins_last_round = true;
-        //         PlaySound(game->you_win_sound_effect);
-        //         return;
-        //     } else if (is_player2_win) {
-        //         game->player2.score += 1;
-        //         game->state = GS_PLAYER_WINS;
-        //         game->is_player1_wins_last_round = false;
-        //         PlaySound(game->you_win_sound_effect);
-        //         return;
-        //     }
+        //
+        // Game is playing, update all states
+        //
+        if self.state == GameState::Playing {
+            // Update ball
+            let ball: &Ball = &self.ball;
+            let mut is_player1_win = false;
+            let mut is_player2_win = false;
+            self.ball.update(
+                &self.table_rect,
+                &self.player1,
+                &self.player2,
+                &mut is_player1_win,
+                &mut is_player2_win,
+            );
+            if is_player1_win {
+                self.player1.score += 1;
+                self.state = GameState::PlayerWins(
+                    self.player1.r#type.clone(),
+                    self.player1.name.clone(),
+                    self.player1.score,
+                );
+                // PlaySound(self.you_win_sound_effect);
+                return;
+            } else if is_player2_win {
+                self.player2.score += 1;
+                self.state = GameState::PlayerWins(
+                    self.player2.r#type.clone(),
+                    self.player2.name.clone(),
+                    self.player2.score,
+                );
+                // PlaySound(self.you_win_sound_effect);
+                return;
+            }
 
-        //     // Update lighting tail
-        //     Ball_update_lighting_tail(ball);
+            // Update lighting tail
+            // Ball_update_lighting_tail(ball);
 
-        //     /* TraceLog(LOG_DEBUG, */
-        //     /*          ">>> [ Game_logic ] - ball center: { x: %.2f, y: %.2f, " */
-        //     /*          "speed_x: %.2f, speed_Y: %.2f}", */
-        //     /*          ball->center.x, ball->center.y, ball->speed_x,
-        //      * ball->speed_y); */
-
-        //     //
-        //     // Update racket postion
-        //     //
-        //     if (IsKeyDown(PLAYER_2_UP_KEY)) {
-        //         Player_update_racket(&game->player2, &game->table_rect,
-        //                              RUT_MOVE_UP);
-        //     }
-        //     if (IsKeyDown(PLAYER_2_DOWN_KEY)) {
-        //         Player_update_racket(&game->player2, &game->table_rect,
-        //                              RUT_MOVE_DOWN);
-        //     }
-        //     if (IsKeyDown(PLAYER_1_UP_KEY)) {
-        //         Player_update_racket(&game->player1, &game->table_rect,
-        //                              RUT_MOVE_UP);
-        //     }
-        //     if (IsKeyDown(PLAYER_1_DOWN_KEY)) {
-        //         Player_update_racket(&game->player1, &game->table_rect,
-        //                              RUT_MOVE_DOWN);
-        //     }
-        // }
+            //
+            // Update racket postion
+            //
+            let current_frame_time = self.rl_handle.get_frame_time();
+            if self.rl_handle.is_key_down(config::PLAYER_2_UP_KEY) {
+                self.player2.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::MoveUp,
+                    current_frame_time,
+                );
+            }
+            if self.rl_handle.is_key_down(config::PLAYER_2_DOWN_KEY) {
+                self.player2.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::MoveDown,
+                    current_frame_time,
+                );
+            }
+            if self.rl_handle.is_key_down(config::PLAYER_1_UP_KEY) {
+                self.player1.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::MoveUp,
+                    current_frame_time,
+                );
+            }
+            if self.rl_handle.is_key_down(config::PLAYER_1_DOWN_KEY) {
+                self.player1.update_racket(
+                    &self.table_rect,
+                    RacketUpdateType::MoveDown,
+                    current_frame_time,
+                );
+            }
+        }
     }
 
     ///
