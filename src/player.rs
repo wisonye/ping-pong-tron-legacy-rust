@@ -1,9 +1,8 @@
 use crate::config;
 use crate::utils::color_to_hex_str;
 use raylib::prelude::{
-    consts::{KeyboardKey, TraceLogLevel},
-    logging::{set_trace_log, trace_log},
-    Color, RaylibDraw, RaylibDrawHandle, Rectangle, Texture2D, Vector2,
+    consts::TraceLogLevel, logging::trace_log, Color, RaylibDraw, RaylibDrawHandle, Rectangle,
+    Texture2D, Vector2,
 };
 
 ///
@@ -73,7 +72,7 @@ impl Player {
     ///
     ///
     ///
-    fn win(&mut self) {
+    pub fn win(&mut self) {
         self.score += 1;
     }
 

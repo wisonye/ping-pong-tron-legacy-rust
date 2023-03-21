@@ -526,7 +526,7 @@ impl Game {
                 &mut is_player2_win,
             );
             if is_player1_win {
-                self.player1.score += 1;
+                self.player1.win();
                 self.state = GameState::PlayerWins(
                     self.player1.r#type.clone(),
                     self.player1.name.clone(),
@@ -535,7 +535,7 @@ impl Game {
                 // PlaySound(self.you_win_sound_effect);
                 return;
             } else if is_player2_win {
-                self.player2.score += 1;
+                self.player2.win();
                 self.state = GameState::PlayerWins(
                     self.player2.r#type.clone(),
                     self.player2.name.clone(),
