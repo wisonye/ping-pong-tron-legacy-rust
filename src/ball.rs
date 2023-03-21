@@ -71,7 +71,7 @@ impl Ball {
     ///
     ///
     ///
-    fn redraw(&self) {}
+    pub fn redraw(&self) {}
 
     ///
     ///

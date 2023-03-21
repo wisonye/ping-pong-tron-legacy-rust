@@ -463,15 +463,17 @@ impl Game {
                 height: screen_height as f32 - sb_rect_bottom - 2.0 * config::TABLE_UI_MARGIN,
             };
 
-            // //
-            // // Sync racket position
-            // //
-            // Player_update_racket_after_screen_size_changed(
-            //     &self.player1, &self.table_rect,
-            //     &self.table_rect_before_screen_changed);
-            // Player_update_racket_after_screen_size_changed(
-            //     &self.player2, &self.table_rect,
-            //     &self.table_rect_before_screen_changed);
+            //
+            // Sync racket position
+            //
+            self.player1.update_racket_after_screen_size_changed(
+                &self.table_rect,
+                &self.table_rect_before_screen_changed,
+            );
+            self.player2.update_racket_after_screen_size_changed(
+                &self.table_rect,
+                &self.table_rect_before_screen_changed,
+            );
         }
 
         //

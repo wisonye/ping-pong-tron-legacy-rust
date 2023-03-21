@@ -116,11 +116,22 @@ impl Player {
     ///
     ///
     ///
-    fn update_racket_after_screen_size_changed(
-        &self,
+    pub fn update_racket_after_screen_size_changed(
+        &mut self,
         container: &Rectangle,
         old_container: &Rectangle,
     ) {
+        let old_y = self.default_racket.rect.y;
+        let ratio_y = old_y / old_container.height;
+
+        self.default_racket.rect.x = if self.r#type == PlayerType::Left {
+            container.x + config::RACKET_UI_MARGIN
+        } else {
+            container.x + container.width
+                - config::RACKET_UI_MARGIN
+                - config::RACKET_UI_WIDTH as f32
+        };
+        self.default_racket.rect.y = container.height * ratio_y;
     }
 
     ///
