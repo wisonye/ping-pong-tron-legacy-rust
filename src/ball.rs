@@ -2,7 +2,8 @@ use crate::config;
 use crate::player::Player;
 use crate::utils::color_to_hex_str;
 use raylib::prelude::{
-    Color, RaylibBlendMode, RaylibDraw, RaylibDrawHandle, Rectangle, Sound, Texture2D, Vector2,
+    consts::TraceLogLevel, logging::trace_log, Color, RaylibBlendMode, RaylibDraw,
+    RaylibDrawHandle, Rectangle, Sound, Texture2D, Vector2,
 };
 
 ///
@@ -210,9 +211,166 @@ impl Ball {
         table_rect: &Rectangle,
         player1: &Player,
         player2: &Player,
+        current_frame_time: f32,
         is_player1_win: &mut bool,
         is_player2_win: &mut bool,
     ) {
+        //
+        // Next ball position
+        //
+        self.center.x += current_frame_time * self.velocity_x;
+        self.center.y += current_frame_time * self.velocity_y;
+
+        //
+        // Ball bouncing in table
+        //
+
+        // If `ball` hit the top of `table_rect`
+        if self.center.y - self.radius <= table_rect.y {
+            self.center.y = table_rect.y + self.radius;
+            self.velocity_y *= -1.0; // Flip the velocity_y direction
+        }
+        // If `ball` hit the bottom of `table_rect`
+        else if self.center.y + self.radius >= table_rect.y + table_rect.height {
+            self.center.y = table_rect.y + table_rect.height - self.radius;
+            self.velocity_y *= -1.0; // Flip the velocity_y direction
+        }
+
+        //
+        // Win or lose
+        //
+
+        // If `ball` hit the left of `table_rect`
+        if self.center.x <= table_rect.x {
+            *is_player2_win = true;
+            return;
+        }
+        // If `ball` hit the right of `table_rect`
+        else if self.center.x >= table_rect.x + table_rect.width {
+            *is_player1_win = true;
+            return;
+        }
+
+        //
+        // Hit player's racket to increase the velocity
+        //
+        let ball_left_point = Vector2 {
+            x: self.center.x - self.radius,
+            y: self.center.y,
+        };
+        let ball_right_point = Vector2 {
+            x: self.center.x + self.radius,
+            y: self.center.y,
+        };
+
+        // If `ball` hit the left player's racket
+        if player1
+            .default_racket
+            .rect
+            .check_collision_point_rec(ball_left_point)
+        {
+            trace_log(
+                TraceLogLevel::LOG_DEBUG,
+                &format!(">>> [ Ball_update ] - Hit player 1 racket"),
+            );
+            self.center.x =
+                player1.default_racket.rect.x + player1.default_racket.rect.width + self.radius;
+            self.velocity_x *= -1.0; // Flip the velocity_x direction
+            self.current_hits += 1;
+            // PlaySound(self.hit_racket_sound_effect);
+        }
+        // If `ball` hit the right player's racket
+        else if player2
+            .default_racket
+            .rect
+            .check_collision_point_rec(ball_right_point)
+        {
+            trace_log(
+                TraceLogLevel::LOG_DEBUG,
+                &format!(">>> [ Ball_update ] - Hit player 2 racket"),
+            );
+            self.center.x = player2.default_racket.rect.x - self.radius;
+            self.velocity_x *= -1.0; // Flip the velocity_x direction
+            self.current_hits += 1;
+            // PlaySound(self.hit_racket_sound_effect);
+        }
+
+        if self.current_hits >= config::BALL_UI_HITS_BEFORE_INCREASE_VELOCITY {
+            // Increase `current_velocities_increase `
+            self.current_velocities_increase += 1;
+
+            // Reset
+            self.current_hits = 0;
+
+            // Increase speed
+            self.velocity_x = if self.velocity_x > 0.0 {
+                self.velocity_x + config::BALL_UI_VELOCITY_ACCELERATION
+            } else {
+                self.velocity_x - config::BALL_UI_VELOCITY_ACCELERATION
+            };
+            self.velocity_y = if self.velocity_y > 0.0 {
+                self.velocity_y + config::BALL_UI_VELOCITY_ACCELERATION
+            } else {
+                self.velocity_y - config::BALL_UI_VELOCITY_ACCELERATION
+            };
+
+            trace_log(
+            TraceLogLevel::LOG_DEBUG,
+            &format!(">>> [ Ball_update ] - {} hits happens, increase velocity to (x: {:.2}, y: {:.2 }), current_velocities_increase: {}",config::BALL_UI_HITS_BEFORE_INCREASE_VELOCITY, self.velocity_x, self.velocity_y, self.current_velocities_increase));
+
+            //
+            // Enable fireball
+            //
+            if !self.enabled_fireball
+                && self.current_velocities_increase
+                    >= config::BALL_UI_VELOCITIES_INCREASE_TO_ENABLE_FIREBALL
+            {
+                self.enabled_fireball = true;
+                // PlaySound(self.enable_fireball_sound_effect);
+                trace_log(
+                    TraceLogLevel::LOG_DEBUG,
+                    &format!(">>> [ Ball_update ] - Enabled fireball"),
+                );
+            }
+
+            //
+            // Enable lightning ball
+            //
+            if !self.enabled_lightning_ball
+                && self.current_velocities_increase
+                    >= config::BALL_UI_VELOCITIES_INCREASE_TO_ENABLE_LIGHTNING_BALL
+            {
+                self.enabled_lightning_ball = true;
+                // PlaySound(self.enable_lightning_ball_sound_effect);
+                trace_log(
+                    TraceLogLevel::LOG_DEBUG,
+                    &format!(">>> [ Ball_update ] - Enabled lightning ball"),
+                );
+
+                // Reduce ball radius
+                self.radius = config::BALL_UI_LIGHTING_BALL_RADIUS;
+
+                // Reduce the tail particle size
+                let mut particles = &mut self.lighting_tail.particles;
+
+                for i in 0..config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {
+                    // It affects how big the particle will be: how many percentage
+                    // of the ball size: 0.0 ~ 1.0 (0 ~ 100%)
+                    particles[i].size =
+                        config::BALL_UI_LIGHTING_TAIL_PRATICLE_SIZE_FOR_LIGHTNING_BALL;
+                }
+            }
+        }
+
+        //
+        // Update lightning ball attriubtes
+        //
+        if self.enabled_lightning_ball {
+            self.lightning_ball_rotation_angle += 32.0;
+            if self.lightning_ball_rotation_angle > 360.0 {
+                self.lightning_ball_rotation_angle = 0.0;
+            }
+        }
     }
 
     ///

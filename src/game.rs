@@ -517,12 +517,14 @@ impl Game {
             //
             // Update ball
             //
+            let current_frame_time = self.rl_handle.get_frame_time();
             let mut is_player1_win = false;
             let mut is_player2_win = false;
             self.ball.update(
                 &self.table_rect,
                 &self.player1,
                 &self.player2,
+                current_frame_time,
                 &mut is_player1_win,
                 &mut is_player2_win,
             );
