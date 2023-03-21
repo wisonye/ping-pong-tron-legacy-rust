@@ -2,7 +2,7 @@ use crate::config;
 use crate::player::Player;
 use crate::utils::color_to_hex_str;
 use raylib::prelude::{
-    consts::TraceLogLevel, logging::trace_log, Color, RaylibBlendMode, RaylibDraw,
+    consts::TraceLogLevel, logging::trace_log, Color, RaylibAudio, RaylibBlendMode, RaylibDraw,
     RaylibDrawHandle, Rectangle, Sound, Texture2D, Vector2,
 };
 
@@ -208,6 +208,7 @@ impl Ball {
     ///
     pub fn update(
         &mut self,
+        rl_audio: &mut RaylibAudio,
         table_rect: &Rectangle,
         player1: &Player,
         player2: &Player,
@@ -277,7 +278,7 @@ impl Ball {
                 player1.default_racket.rect.x + player1.default_racket.rect.width + self.radius;
             self.velocity_x *= -1.0; // Flip the velocity_x direction
             self.current_hits += 1;
-            // PlaySound(self.hit_racket_sound_effect);
+            rl_audio.play_sound(&self.hit_racket_sound_effect);
         }
         // If `ball` hit the right player's racket
         else if player2
@@ -292,7 +293,7 @@ impl Ball {
             self.center.x = player2.default_racket.rect.x - self.radius;
             self.velocity_x *= -1.0; // Flip the velocity_x direction
             self.current_hits += 1;
-            // PlaySound(self.hit_racket_sound_effect);
+            rl_audio.play_sound(&self.hit_racket_sound_effect);
         }
 
         if self.current_hits >= config::BALL_UI_HITS_BEFORE_INCREASE_VELOCITY {
@@ -326,7 +327,7 @@ impl Ball {
                     >= config::BALL_UI_VELOCITIES_INCREASE_TO_ENABLE_FIREBALL
             {
                 self.enabled_fireball = true;
-                // PlaySound(self.enable_fireball_sound_effect);
+                rl_audio.play_sound(&self.enable_fireball_sound_effect);
                 trace_log(
                     TraceLogLevel::LOG_DEBUG,
                     &format!(">>> [ Ball_update ] - Enabled fireball"),
@@ -341,7 +342,7 @@ impl Ball {
                     >= config::BALL_UI_VELOCITIES_INCREASE_TO_ENABLE_LIGHTNING_BALL
             {
                 self.enabled_lightning_ball = true;
-                // PlaySound(self.enable_lightning_ball_sound_effect);
+                rl_audio.play_sound(&self.enable_lightning_ball_sound_effect);
                 trace_log(
                     TraceLogLevel::LOG_DEBUG,
                     &format!(">>> [ Ball_update ] - Enabled lightning ball"),
@@ -388,7 +389,6 @@ impl Ball {
 
         let mut index = 0;
         while index < config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {
-            // for mut i in 0..config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {
             if !particles[index].active {
                 particles[index].active = true;
                 particles[index].alpha = config::BALL_UI_LIGHTING_TAIL_PRATICLE_INIT_ALPHA;
@@ -397,7 +397,6 @@ impl Ball {
             } else {
                 index += 1;
             }
-            // }
         }
 
         for i in 0..config::BALL_UI_LIGHTING_TAIL_PARTICLE_COUNT {

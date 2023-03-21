@@ -16,28 +16,29 @@ use std::str::FromStr;
 ///
 #[derive(Debug, PartialEq)]
 pub enum GameState {
-    UnInit,
-    Init,
+    // UnInit,
+    // Init,
     BeforeStart,
     Playing,
     PlayerWins(PlayerType, String, usize),
-    Pause,
+    // Pause,
 }
 
 ///
 ///
 ///
-#[derive(Debug)]
-struct MiscSettings {
-    game_fps: f32,
-}
+// #[derive(Debug)]
+// struct MiscSettings {
+//     game_fps: f32,
+// }
 
 ///
 ///
 ///
 pub struct Game {
-    pub rl_handle: RaylibHandle,
-    pub rl_thread: RaylibThread,
+    rl_handle: RaylibHandle,
+    rl_thread: RaylibThread,
+    rl_audio: RaylibAudio,
     player1: Player,
     player2: Player,
     scoreboard: Scoreboard,
@@ -77,7 +78,7 @@ impl Game {
             .build();
 
         // You can't use `let _` here, otherwise, "failed to load sound XXX"
-        let mut rl_audio = RaylibAudio::init_audio_device();
+        let rl_audio = RaylibAudio::init_audio_device();
 
         // Hide the cursor
         rl_handle.hide_cursor();
@@ -206,6 +207,7 @@ impl Game {
         let game = Self {
             rl_handle,
             rl_thread,
+            rl_audio,
             scoreboard: Scoreboard::new(&player1.name, &player2.name),
             player1,
             player2,
@@ -521,6 +523,7 @@ impl Game {
             let mut is_player1_win = false;
             let mut is_player2_win = false;
             self.ball.update(
+                &mut self.rl_audio,
                 &self.table_rect,
                 &self.player1,
                 &self.player2,
@@ -539,7 +542,7 @@ impl Game {
                     self.player1.name.clone(),
                     self.player1.score,
                 );
-                // PlaySound(self.you_win_sound_effect);
+                self.rl_audio.play_sound(&self.you_win_sound_effect);
                 return;
             } else if is_player2_win {
                 self.player2.win();
@@ -548,7 +551,7 @@ impl Game {
                     self.player2.name.clone(),
                     self.player2.score,
                 );
-                // PlaySound(self.you_win_sound_effect);
+                self.rl_audio.play_sound(&self.you_win_sound_effect);
                 return;
             }
 
@@ -710,12 +713,12 @@ impl Game {
     ///
     ///
     ///
-    pub fn pause(&self) {}
+    // pub fn pause(&self) {}
 
     ///
     ///
     ///
-    pub fn resume(&self) {}
+    // pub fn resume(&self) {}
 
     ///
     ///
