@@ -3,10 +3,10 @@ use crate::config;
 use crate::player::{Player, PlayerType, Racket, RacketUpdateType};
 use crate::scoreboard::Scoreboard;
 use raylib::prelude::{
-    consts::{KeyboardKey, TraceLogLevel},
+    consts::{BlendMode, KeyboardKey, TraceLogLevel},
     logging::{set_trace_log, trace_log},
-    measure_text_ex, window, Color, Image, RaylibAudio, RaylibDraw, RaylibDrawHandle, RaylibHandle,
-    RaylibThread, Rectangle, Sound, Vector2, WeakFont,
+    measure_text_ex, window, Color, Image, RaylibAudio, RaylibBlendModeExt, RaylibDraw,
+    RaylibDrawHandle, RaylibHandle, RaylibThread, Rectangle, Sound, Vector2, WeakFont,
 };
 use std::env;
 use std::str::FromStr;
@@ -340,7 +340,7 @@ impl Game {
             //
             // GS_PLAYER_WINS
             //
-            GameState::PlayerWins(player_type, name, score) => {
+            GameState::PlayerWins(_player_type, name, _score) => {
                 // Last winner's name
                 let last_winner_name =
                     format!("{}{}", name, config::TABLE_UI_PLAYER_WINS_PROMPT_TEXT);
@@ -481,7 +481,7 @@ impl Game {
             let current_frame_time = self.rl_handle.get_frame_time();
             if let GameState::PlayerWins(_, _, _) = self.state {
                 self.state = GameState::Playing;
-                //Ball_restart(&game.ball, &game.table_rect);
+                self.ball.restart(&self.table_rect);
                 self.player1.update_racket(
                     &self.table_rect,
                     RacketUpdateType::Reset,
@@ -495,7 +495,7 @@ impl Game {
                 self.print_debug_info();
             } else if self.state == GameState::BeforeStart {
                 self.state = GameState::Playing;
-                //Ball_restart(&game.ball, &game.table_rect);
+                self.ball.restart(&self.table_rect);
                 self.player1.update_racket(
                     &self.table_rect,
                     RacketUpdateType::Reset,
@@ -514,8 +514,9 @@ impl Game {
         // Game is playing, update all states
         //
         if self.state == GameState::Playing {
+            //
             // Update ball
-            let ball: &Ball = &self.ball;
+            //
             let mut is_player1_win = false;
             let mut is_player2_win = false;
             self.ball.update(
@@ -525,6 +526,10 @@ impl Game {
                 &mut is_player1_win,
                 &mut is_player2_win,
             );
+
+            //
+            // Change game state if someone wins
+            //
             if is_player1_win {
                 self.player1.win();
                 self.state = GameState::PlayerWins(
@@ -545,7 +550,9 @@ impl Game {
                 return;
             }
 
+            //
             // Update lighting tail
+            //
             // Ball_update_lighting_tail(ball);
 
             //
@@ -647,7 +654,29 @@ impl Game {
             //
             // Ball
             //
-            // self.ball.redraw();
+            // // Color blending modes (pre-defined)
+            // typedef enum {
+            // BLEND_ALPHA = 0,         // Blend textures considering alpha (default)
+            // BLEND_ADDITIVE,          // Blend textures adding colors
+            // BLEND_MULTIPLIED,        // Blend textures multiplying colors
+            // BLEND_ADD_COLORS,        // Blend textures adding colors (alternative)
+            // BLEND_SUBTRACT_COLORS,   // Blend textures subtracting colors
+            // (alternative) BLEND_ALPHA_PREMULTIPLY, // Blend premultiplied textures
+            // considering alpha BLEND_CUSTOM             // Blend textures using custom
+            // src/dst factors (use rlSetBlendMode()) } BlendMode;
+            //
+            //
+            // Above is the supported `blend mode` which affects how blending works,
+            // `BLEND_ADDTIVE` is the only effect I wanted.
+            //
+            // Rust version is here:
+            //
+            // https://github.com/deltaphc/raylib-rs/blob/master/raylib-sys/bindings_osx.rs#L3127
+            // let draw_in_blend_mode = rdl.begin_blend_mode(BlendMode::BLEND_ADDITIVE);
+            //
+            let mut draw_in_blend_mode = d.begin_blend_mode(BlendMode::BLEND_ADDITIVE);
+            self.ball.redraw(&mut draw_in_blend_mode);
+
             //
             // Update `game->table_rect` if changed
             //
