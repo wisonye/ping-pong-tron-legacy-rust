@@ -29,24 +29,10 @@ impl Scoreboard {
     ///
     ///
     ///
-    pub fn reset_player_score_to_zero(&mut self) {
-        self.player1_score = 0;
-        self.player2_score = 0;
-    }
-
-    ///
-    ///
-    ///
-    pub fn add_player1_score(&mut self) {
-        self.player1_score += 1;
-    }
-
-    ///
-    ///
-    ///
-    pub fn add_player2_score(&mut self) {
-        self.player2_score += 1;
-    }
+    // pub fn reset_player_score_to_zero(&mut self) {
+    //     self.player1_score = 0;
+    //     self.player2_score = 0;
+    // }
 
     ///
     ///

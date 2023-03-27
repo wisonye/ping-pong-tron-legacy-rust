@@ -232,19 +232,6 @@ impl Game {
     ///
     ///
     ///
-    pub fn get_player1(&self) -> &Player {
-        &self.player1
-    }
-
-    ///
-    ///
-    ///
-    pub fn get_player2(&self) -> &Player {
-        &self.player2
-    }
-    ///
-    ///
-    ///
     fn toggle_fullscreen(&mut self) {
         if !self.is_fullscreen {
             let monitor = window::get_current_monitor();
